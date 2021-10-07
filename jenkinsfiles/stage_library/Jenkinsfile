@@ -56,7 +56,7 @@ pipeline {
                     # For Node.js use 'sed -i "s/\"version\": \"${APP_VERSION}.*\"/\"version\": \"${APP_VERSION}.${BUILD_NUMBER}\"/g" package.json'
                     echo "[INFO] Starting Build & Test ..."
                     echo "${APP_VERSION}.${BUILD_NUMBER}" > artifact.txt
-                    chmod -x run_tests.sh
+                    chmod +x run_tests.sh
                     ./run_tests.sh FooBar
                 '''
                 sleep randomIntInRange(5,15)
