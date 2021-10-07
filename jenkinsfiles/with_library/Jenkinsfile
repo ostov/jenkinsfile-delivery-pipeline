@@ -1,0 +1,124 @@
+@Library('ostov-library') _
+
+def APP_VERSION = ''
+def APP_BUILD = ''
+def randomIntInRange(int lowerInt, int upperInt) {
+    return Math.abs( new Random().nextInt() % (upperInt - lowerInt) ) + lowerInt
+}
+
+pipeline {
+    options {
+        authorizationMatrix([])
+        buildDiscarder logRotator(
+            artifactDaysToKeepStr: '',
+            artifactNumToKeepStr: '',
+            daysToKeepStr: '30',
+            numToKeepStr: ''
+        )
+        copyArtifactPermission env.JOB_NAME
+        ansiColor('xterm')
+        timestamps()
+    }
+    agent none
+    stages {
+
+        stage("Build & Test") {
+            options {
+                timeout(time: 20, unit: 'MINUTES')
+            }
+            agent { label 'CI' }
+            steps {
+                task("Build & Test") {
+                    script {
+                        env.APP_VERSION = sh (
+                            script: 'echo "1.0"',
+                            returnStdout: true
+                        ).trim()
+                        env.APP_BUILD = env.BUILD_NUMBER
+                        currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}"
+                    }
+                    echo "Build & Test"
+                    sh '''
+                        echo "[INFO] Starting Build & Test ..."
+                        echo "${APP_VERSION}.${BUILD_NUMBER}" > artifact.txt
+                    '''
+                    writeFile file: "target/test-results/test/TEST-Foo.xml", text: """
+                        <testsuite tests="3">
+                            <testcase classname="foo1" name="ASuccessfulTest"/>
+                            <testcase classname="foo2" name="AnotherSuccessfulTest"/>
+                            <testcase classname="foo3" name="AFailingTest">
+                            <failure type="NotEnoughFoo"> details about failure </failure>
+                            </testcase>
+                        </testsuite>
+                    """
+                    sleep randomIntInRange(10,30)
+                }
+                task("Archive Artifacts") {
+                    archiveArtifacts artifacts: 'artifact.txt',
+                    allowEmptyArchive: false,
+                    fingerprint: true,
+                    onlyIfSuccessful: true
+                }
+
+            }
+            post {
+                always {
+                    // recordIssues enabledForFailure: true, tools: [mavenConsole(), checkStyle()]
+                    junit skipPublishingChecks: true, testResults: '**/target/test-results/**/TEST*.xml'
+                    // jacoco classPattern: '**/target/classes', exclusionPattern: '**/*Test*.class', execPattern: '**/target/jacoco/**/*.exec', inclusionPattern: '**/*.class', sourceInclusionPattern: '**/*.java'
+                    milestone 1
+                }
+            }
+
+        deployStage([ "envName": "DevInt", "timeOut": 10, "lockMilestone": 2, "doneMilestone": 3 ])
+
+        stage("Tests on DevInt") {
+            options {
+                skipDefaultCheckout()
+                timeout(time: 15, unit: 'MINUTES')
+            }
+            environment {
+                envName = "DevInt"
+            }
+            agent { label env.envName }
+            steps {
+                lock(resource: env.envName, inversePrecedence: true) {
+                    milestone 4
+                    script { currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}" }
+                    // checkout changelog: false, scm: [$class: 'GitSCM',
+                    //     branches: [[name: "refs/heads/master"]],
+                    //     doGenerateSubmoduleConfigurations: false,
+                    //     extensions: [[$class: 'WipeWorkspace']],
+                    //     submoduleCfg: [],
+                    //     userRemoteConfigs: [[
+                    //         url: 'git@github.com:Calavista/wifi-indigo.git',
+                    //         refspec: '+refs/heads/master:refs/remotes/origin/master',
+                    //     ]]
+                    // ]
+                    echo "Testing on ${env.envName}"
+                    sh '''
+                        echo "[INFO] Testing ${APP_VERSION}.${APP_BUILD} on ${envName} ..."
+                    '''
+                    writeFile file: "target/test-results/test/TEST-Foo.xml", text: """
+                        <testsuite tests="3">
+                            <testcase classname="foo1" name="ASuccessfulTest"/>
+                            <testcase classname="foo2" name="AnotherSuccessfulTest"/>
+                            <testcase classname="foo3" name="AFailingTest">
+                            <failure type="NotEnoughFoo"> details about failure </failure>
+                            </testcase>
+                        </testsuite>
+                    """
+                    sleep randomIntInRange(10,30)
+                }
+            }
+            post {
+                always {
+                    junit skipPublishingChecks: true, testResults: '**/target/test-results/**/TEST*.xml'
+                    // jacoco classPattern: '**/target/classes', exclusionPattern: '**/*Test*.class', execPattern: '**/target/jacoco/**/*.exec', inclusionPattern: '**/*.class', sourceInclusionPattern: '**/*.java'
+                    milestone 5
+                }
+            }
+        }
+    }
+}     
+      
