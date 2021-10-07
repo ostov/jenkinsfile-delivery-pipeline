@@ -58,7 +58,7 @@ pipeline {
                             </testcase>
                         </testsuite>
                     """
-                    sleep randomIntInRange(10,30)
+                    sleep randomIntInRange(5,15)
                 }
                 task("Archive Artifacts") {
                     archiveArtifacts artifacts: 'artifact.txt',
