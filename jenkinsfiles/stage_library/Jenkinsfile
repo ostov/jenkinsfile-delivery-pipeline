@@ -32,6 +32,8 @@ pipeline {
                     script {
                         env.APP_VERSION = sh (
                             script: 'cat version.properties | grep "APP_VERSION" | awk -F\'[=.]\' \'{print $2 "." $3;}\'',
+                            // For Maven use 'xq -r .project.version pom.xml | awk -F\'[.]\' \'{print $1 "." $2;}\''
+                            // For Node.js use 'jq -r '.version' package.json | awk -F\'[.]\' \'{print $1 "." $2;}\''
                             returnStdout: true
                         ).trim()
                         env.APP_BUILD = env.BUILD_NUMBER
@@ -39,18 +41,13 @@ pipeline {
                     }
                     echo "Build & Test"
                     sh '''
+                        echo "[INFO] Updating version with build number ..."
+                        # For Maven use goal "versions:set -DnewVersion=${APP_VERSION}.${APP_BUILD_NUMBER}"
+                        # For Node.js use 'sed -i "s/\"version\": \"${APP_VERSION}.*\"/\"version\": \"${APP_VERSION}.${BUILD_NUMBER}\"/g" package.json'
                         echo "[INFO] Starting Build & Test ..."
                         echo "${APP_VERSION}.${BUILD_NUMBER}" > artifact.txt
+                        ./runt_tests.sh FooBar
                     '''
-                    writeFile file: "target/test-results/test/TEST-Foo.xml", text: """
-                        <testsuite tests="3">
-                            <testcase classname="foo1" name="ASuccessfulTest"/>
-                            <testcase classname="foo2" name="AnotherSuccessfulTest"/>
-                            <testcase classname="foo3" name="AFailingTest">
-                            <failure type="NotEnoughFoo"> details about failure </failure>
-                            </testcase>
-                        </testsuite>
-                    """
                     sleep randomIntInRange(10,30)
                 }
                 task("Archive Artifacts") {
