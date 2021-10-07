@@ -21,6 +21,7 @@ pipeline {
             daysToKeepStr: '30',
             numToKeepStr: ''
         )
+        skipDefaultCheckout()
         copyArtifactPermission env.JOB_NAME
         ansiColor('xterm')
         timestamps()
@@ -36,6 +37,17 @@ pipeline {
             steps {
                 task("Build & Test") {
                     script {
+                        checkout changelog: false, scm: [
+                            $class: 'GitSCM',
+                            branches: [[name: "refs/heads/master"]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'WipeWorkspace']],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[
+                                url: 'https://github.com/ostov/jenkinsfile-delivery-pipeline-tests.git',
+                                refspec: '+refs/heads/master:refs/remotes/origin/master',
+                            ]]
+                        ]
                         env.APP_VERSION = sh (
                             script: 'cat version.properties | grep "APP_VERSION" | awk -F\'[=.]\' \'{print $2 "." $3;}\'',
                             // For Maven use 'xq -r .project.version pom.xml | awk -F\'[.]\' \'{print $1 "." $2;}\''
@@ -76,7 +88,6 @@ pipeline {
 
         stage("Deploy to DevInt") {
             options {
-                skipDefaultCheckout()
                 timeout(time: 10, unit: 'MINUTES')
             }
             agent { label env.envName }
@@ -87,7 +98,6 @@ pipeline {
 
         stage("Tests on DevInt") {
             options {
-                skipDefaultCheckout()
                 timeout(time: 15, unit: 'MINUTES')
             }
             agent { label env.envName }
@@ -105,7 +115,6 @@ pipeline {
 
         stage("Deploy to QA") {
             options {
-                skipDefaultCheckout()
                 timeout(time: 10, unit: 'MINUTES')
             }
             input {
@@ -121,7 +130,6 @@ pipeline {
 
         stage("Tests on QA") {
             options {
-                skipDefaultCheckout()
                 timeout(time: 45, unit: 'MINUTES')
             }
             agent { label env.envName }
@@ -139,7 +147,6 @@ pipeline {
 
         stage("Deploy to Staging") {
             options {
-                skipDefaultCheckout()
                 timeout(time: 14, unit: 'DAYS')
             }
             input {
@@ -155,7 +162,6 @@ pipeline {
 
         stage("Deploy to Production") {
             options {
-                skipDefaultCheckout()
                 timeout(time: 14, unit: 'DAYS')
             }
             input {
