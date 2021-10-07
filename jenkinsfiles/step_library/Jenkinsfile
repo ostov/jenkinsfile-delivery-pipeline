@@ -35,46 +35,41 @@ pipeline {
             }
             agent { label 'CI' }
             steps {
-                task("Build & Test") {
-                    script {
-                        checkout changelog: false, scm: [
-                            $class: 'GitSCM',
-                            branches: [[name: "refs/heads/master"]],
-                            doGenerateSubmoduleConfigurations: false,
-                            extensions: [[$class: 'WipeWorkspace']],
-                            submoduleCfg: [],
-                            userRemoteConfigs: [[
-                                url: 'https://github.com/ostov/jenkinsfile-delivery-pipeline-tests.git',
-                                refspec: '+refs/heads/master:refs/remotes/origin/master',
-                            ]]
-                        ]
-                        env.APP_VERSION = sh (
-                            script: 'cat version.properties | grep "APP_VERSION" | awk -F\'[=.]\' \'{print $2 "." $3;}\'',
-                            // For Maven use 'xq -r .project.version pom.xml | awk -F\'[.]\' \'{print $1 "." $2;}\''
-                            // For Node.js use 'jq -r '.version' package.json | awk -F\'[.]\' \'{print $1 "." $2;}\''
-                            returnStdout: true
-                        ).trim()
-                        env.APP_BUILD = env.BUILD_NUMBER
-                        currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}"
-                    }
-                    echo "Build & Test"
-                    sh '''
-                        echo "[INFO] Updating version with build number ..."
-                        # For Maven use goal "versions:set -DnewVersion=${APP_VERSION}.${APP_BUILD_NUMBER}"
-                        # For Node.js use 'sed -i "s/\"version\": \"${APP_VERSION}.*\"/\"version\": \"${APP_VERSION}.${BUILD_NUMBER}\"/g" package.json'
-                        echo "[INFO] Starting Build & Test ..."
-                        echo "${APP_VERSION}.${BUILD_NUMBER}" > artifact.txt
-                        ./runt_tests.sh FooBar
-                    '''
-                    sleep randomIntInRange(5,15)
+                checkout changelog: false, scm: [
+                    $class: 'GitSCM',
+                    branches: [[name: "refs/heads/master"]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [[$class: 'WipeWorkspace']],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/ostov/jenkinsfile-delivery-pipeline-tests.git',
+                        refspec: '+refs/heads/master:refs/remotes/origin/master',
+                    ]]
+                ]
+                script {
+                    env.APP_VERSION = sh (
+                        script: 'cat version.properties | grep "APP_VERSION" | awk -F\'[=.]\' \'{print $2 "." $3;}\'',
+                        // For Maven use 'xq -r .project.version pom.xml | awk -F\'[.]\' \'{print $1 "." $2;}\''
+                        // For Node.js use 'jq -r '.version' package.json | awk -F\'[.]\' \'{print $1 "." $2;}\''
+                        returnStdout: true
+                    ).trim()
+                    env.APP_BUILD = env.BUILD_NUMBER
+                    currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}"
                 }
-                task("Archive Artifacts") {
-                    archiveArtifacts artifacts: 'artifact.txt',
+                echo "Build & Test"
+                sh '''
+                    echo "[INFO] Updating version with build number ..."
+                    # For Maven use goal "versions:set -DnewVersion=${APP_VERSION}.${APP_BUILD_NUMBER}"
+                    # For Node.js use 'sed -i "s/\"version\": \"${APP_VERSION}.*\"/\"version\": \"${APP_VERSION}.${BUILD_NUMBER}\"/g" package.json'
+                    echo "[INFO] Starting Build & Test ..."
+                    echo "${APP_VERSION}.${BUILD_NUMBER}" > artifact.txt
+                    ./runt_tests.sh FooBar
+                '''
+                sleep randomIntInRange(5,15)
+                archiveArtifacts artifacts: 'artifact.txt',
                     allowEmptyArchive: false,
                     fingerprint: true,
                     onlyIfSuccessful: true
-                }
-
             }
             post {
                 always {
