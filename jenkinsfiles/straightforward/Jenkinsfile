@@ -40,12 +40,12 @@ pipeline {
                         echo "[INFO] Starting Build & Test ..."
                         echo "${APP_VERSION}.${BUILD_NUMBER}" > artifact.txt
                     '''
-                    writeFile file: "target/test-results/test/TEST-Foo.xml", text: """
+                    writeFile file: "target/test-results/test/TEST-FooBar-.xml", text: """
                         <testsuite tests="3">
-                            <testcase classname="foo1" name="ASuccessfulTest"/>
-                            <testcase classname="foo2" name="AnotherSuccessfulTest"/>
-                            <testcase classname="foo3" name="AFailingTest">
-                            <failure type="NotEnoughFoo"> details about failure </failure>
+                            <testcase classname="FooBar-1" name="ASuccessfulTest"/>
+                            <testcase classname="FooBar-2" name="AnotherSuccessfulTest"/>
+                            <testcase classname="FooBar-3" name="AFailingTest">
+                            <failure type="NotEnoughFooBar"> details about failure </failure>
                             </testcase>
                         </testsuite>
                     """
@@ -89,7 +89,6 @@ pipeline {
                         echo "[INFO] Deploying to ${envName} ..."
                         cat artifact.txt
                     '''
-                    sleep randomIntInRange(5,20)
                 }
                 milestone 3
             }
@@ -124,14 +123,13 @@ pipeline {
                     '''
                     writeFile file: "target/test-results/test/TEST-Foo.xml", text: """
                         <testsuite tests="3">
-                            <testcase classname="foo1" name="ASuccessfulTest"/>
-                            <testcase classname="foo2" name="AnotherSuccessfulTest"/>
-                            <testcase classname="foo3" name="AFailingTest">
+                            <testcase classname="Foo-1" name="ASuccessfulTest"/>
+                            <testcase classname="Foo-2" name="AnotherSuccessfulTest"/>
+                            <testcase classname="Foo-3" name="AFailingTest">
                             <failure type="NotEnoughFoo"> details about failure </failure>
                             </testcase>
                         </testsuite>
                     """
-                    sleep randomIntInRange(10,30)
                 }
             }
             post {
@@ -168,7 +166,6 @@ pipeline {
                         echo "[INFO] Deploying to ${envName} ..."
                         cat artifact.txt
                     '''
-                    sleep randomIntInRange(5,20)
                 }
                 milestone 7
             }
@@ -201,16 +198,15 @@ pipeline {
                     sh '''
                         echo "[INFO] Testing ${APP_VERSION}.${APP_BUILD} on ${envName} ..."
                     '''
-                    writeFile file: "target/test-results/test/TEST-Foo.xml", text: """
+                    writeFile file: "target/test-results/test/TEST-Bar.xml", text: """
                         <testsuite tests="3">
-                            <testcase classname="foo1" name="ASuccessfulTest"/>
-                            <testcase classname="foo2" name="AnotherSuccessfulTest"/>
-                            <testcase classname="foo3" name="AFailingTest">
-                            <failure type="NotEnoughFoo"> details about failure </failure>
+                            <testcase classname="Bar-1" name="ASuccessfulTest"/>
+                            <testcase classname="Bar-2" name="AnotherSuccessfulTest"/>
+                            <testcase classname="Bar-3" name="AFailingTest">
+                            <failure type="NotEnoughBar"> details about failure </failure>
                             </testcase>
                         </testsuite>
                     """
-                    sleep randomIntInRange(10,30)
                 }
             }
             post {
@@ -247,7 +243,6 @@ pipeline {
                         echo "[INFO] Deploying ${APP_VERSION}.${APP_BUILD} to ${envName} ..."
                         cat artifact.txt
                     '''
-                    sleep randomIntInRange(5,20)
                 }
                 milestone 11
             }
@@ -278,7 +273,6 @@ pipeline {
                         echo "[INFO] Deploying ${APP_VERSION}.${APP_BUILD} to ${envName} ..."
                         cat artifact.txt
                     '''
-                    sleep randomIntInRange(5,20)
                 }
             }
         }

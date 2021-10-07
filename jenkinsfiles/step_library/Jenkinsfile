@@ -49,12 +49,12 @@ pipeline {
                         echo "[INFO] Starting Build & Test ..."
                         echo "${APP_VERSION}.${BUILD_NUMBER}" > artifact.txt
                     '''
-                    writeFile file: "target/test-results/test/TEST-Foo.xml", text: """
+                    writeFile file: "target/test-results/test/TEST-FooBar.xml", text: """
                         <testsuite tests="3">
-                            <testcase classname="foo1" name="ASuccessfulTest"/>
-                            <testcase classname="foo2" name="AnotherSuccessfulTest"/>
-                            <testcase classname="foo3" name="AFailingTest">
-                            <failure type="NotEnoughFoo"> details about failure </failure>
+                            <testcase classname="FooBar-1" name="ASuccessfulTest"/>
+                            <testcase classname="FooBar-2" name="AnotherSuccessfulTest"/>
+                            <testcase classname="FooBar-3" name="AFailingTest">
+                            <failure type="NotEnoughFooBar"> details about failure </failure>
                             </testcase>
                         </testsuite>
                     """
@@ -85,7 +85,7 @@ pipeline {
             }
             agent { label env.envName }
             steps {
-                deployStage([ "envName": "DevInt", "lockMilestone": 2, "doneMilestone": 3 ])
+                deploySteps([ "envName": "DevInt", "lockMilestone": 2, "doneMilestone": 3 ])
             }
         }
 
@@ -94,39 +94,9 @@ pipeline {
                 skipDefaultCheckout()
                 timeout(time: 15, unit: 'MINUTES')
             }
-            environment {
-                envName = "DevInt"
-            }
             agent { label env.envName }
             steps {
-                lock(resource: env.envName, inversePrecedence: true) {
-                    milestone 4
-                    script { currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}" }
-                    // checkout changelog: false, scm: [$class: 'GitSCM',
-                    //     branches: [[name: "refs/heads/master"]],
-                    //     doGenerateSubmoduleConfigurations: false,
-                    //     extensions: [[$class: 'WipeWorkspace']],
-                    //     submoduleCfg: [],
-                    //     userRemoteConfigs: [[
-                    //         url: 'git@github.com:Calavista/wifi-indigo.git',
-                    //         refspec: '+refs/heads/master:refs/remotes/origin/master',
-                    //     ]]
-                    // ]
-                    echo "Testing on ${env.envName}"
-                    sh '''
-                        echo "[INFO] Testing ${APP_VERSION}.${APP_BUILD} on ${envName} ..."
-                    '''
-                    writeFile file: "target/test-results/test/TEST-Foo.xml", text: """
-                        <testsuite tests="3">
-                            <testcase classname="foo1" name="ASuccessfulTest"/>
-                            <testcase classname="foo2" name="AnotherSuccessfulTest"/>
-                            <testcase classname="foo3" name="AFailingTest">
-                            <failure type="NotEnoughFoo"> details about failure </failure>
-                            </testcase>
-                        </testsuite>
-                    """
-                    sleep randomIntInRange(10,30)
-                }
+                testSteps([ "envName": "DevInt", "lockMilestone": 4, "testName": "Foo" ])
             }
             post {
                 always {
@@ -136,5 +106,72 @@ pipeline {
                 }
             }
         }
+
+        stage("Deploy to QA") {
+            options {
+                skipDefaultCheckout()
+                timeout(time: 10, unit: 'MINUTES')
+            }
+            input {
+                message "Should we continue?"
+                ok "Yes, we should"
+                submitter "ostov"
+            }
+            agent { label env.envName }
+            steps {
+                deploySteps([ "envName": "QA", "lockMilestone": 6, "doneMilestone": 7 ])
+            }
+        }
+
+        stage("Tests on QA") {
+            options {
+                skipDefaultCheckout()
+                timeout(time: 45, unit: 'MINUTES')
+            }
+            agent { label env.envName }
+            steps {
+                testSteps([ "envName": "QA", "lockMilestone": 8, "testName": "Bar" ])
+            }
+            post {
+                always {
+                    junit skipPublishingChecks: true, testResults: '**/target/test-results/**/TEST*.xml'
+                    // jacoco classPattern: '**/target/classes', exclusionPattern: '**/*Test*.class', execPattern: '**/target/jacoco/**/*.exec', inclusionPattern: '**/*.class', sourceInclusionPattern: '**/*.java'
+                    milestone 9
+                }
+            }
+        }
+
+        stage("Deploy to Staging") {
+            options {
+                skipDefaultCheckout()
+                timeout(time: 14, unit: 'DAYS')
+            }
+            input {
+                message "Should we continue?"
+                ok "Yes, we should"
+                submitter "ostov"
+            }
+            agent { label env.envName }
+            steps {
+                deploySteps([ "envName": "Staging", "lockMilestone": 10, "doneMilestone": 11 ])
+            }
+        }
+
+        stage("Deploy to Production") {
+            options {
+                skipDefaultCheckout()
+                timeout(time: 14, unit: 'DAYS')
+            }
+            input {
+                message "Should we continue?"
+                ok "Yes, we should"
+                submitter "Calavista*Calavista DevOps,marko-bekhta"
+            }
+            agent { label env.envName }
+            steps {
+                deploySteps([ "envName": "Production", "lockMilestone": 12, "doneMilestone": 13 ])
+            }
+        }
+
     }
 }
