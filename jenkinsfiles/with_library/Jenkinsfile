@@ -69,6 +69,7 @@ pipeline {
                     milestone 1
                 }
             }
+        }
 
         deployStage([ "envName": "DevInt", "timeOut": 10, "lockMilestone": 2, "doneMilestone": 3 ])
 
@@ -120,5 +121,4 @@ pipeline {
             }
         }
     }
-}     
-      
+}
