@@ -1,11 +1,10 @@
-@Library('ostov-library') _
-
-/*
-library identifier: 'custom-lib@master', retriever: modernSCM([
+library identifier: 'ostov-library@master', retriever: modernSCM([
   $class: 'GitSCMSource',
   remote: 'https://github.com/ostov/jenkinsfile-delivery-pipeline-lib.git'
 ])
-*/
+
+// Or use library described in System Configuration
+//@Library('ostov-library') _
 
 def APP_VERSION = ''
 def APP_BUILD = ''
