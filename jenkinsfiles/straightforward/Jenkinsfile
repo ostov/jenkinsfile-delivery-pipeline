@@ -126,7 +126,7 @@ pipeline {
                         echo "[INFO] Testing ${APP_VERSION}.${APP_BUILD} on ${envName} ..."
                         mkdir -p target/test-results/test
                         chmod +x run_tests.sh
-                        ./run_tests.sh
+                        ./run_tests.sh FooBar
                     '''
                 }
             }
