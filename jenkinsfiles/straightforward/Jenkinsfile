@@ -87,7 +87,7 @@ pipeline {
                     milestone 2
                     script { currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}" }
                     cleanWs()
-                    copyArtifacts filter: 'artifact.txt', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
+                    copyArtifacts filter: '**/*', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
                     echo "Deploying ${env.APP_VERSION}.${env.APP_BUILD} to ${env.envName}"
                     sh '''
                         echo "[INFO] Deploying to ${envName} ..."
@@ -158,7 +158,7 @@ pipeline {
                     milestone 6
                     script { currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}" }
                     cleanWs()
-                    copyArtifacts filter: 'artifact.txt', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
+                    copyArtifacts filter: '**/*', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
                     echo "Deploying ${env.APP_VERSION}.${env.APP_BUILD} to ${env.envName}"
                     sh '''
                         echo "[INFO] Deploying to ${envName} ..."
@@ -229,7 +229,7 @@ pipeline {
                     milestone 10
                     script { currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}" }
                     cleanWs()
-                    copyArtifacts filter: 'artifact.txt', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
+                    copyArtifacts filter: '**/*', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
                     echo "Deploying to ${env.envName}"
                     sh '''
                         echo "[INFO] Deploying ${APP_VERSION}.${APP_BUILD} to ${envName} ..."
@@ -259,7 +259,7 @@ pipeline {
                     milestone 12
                     script { currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}" }
                     cleanWs()
-                    copyArtifacts filter: 'artifact.txt', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
+                    copyArtifacts filter: '**/*', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
                     echo "Deploying ${env.APP_VERSION}.${env.APP_BUILD} to ${env.envName}"
                     sh '''
                         echo "[INFO] Deploying ${APP_VERSION}.${APP_BUILD} to ${envName} ..."
