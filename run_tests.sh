@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-cat >> target/test-results/test/TEST-${TEST_NAME}.xml << EOF
+cat >> target/test-results/test/TEST-$1.xml << EOF
 <testsuite tests="3">
-    <testcase classname="${TEST_NAME}-1" name="ASuccessfulTest"/>
-    <testcase classname="${TEST_NAME}-2" name="AnotherSuccessfulTest"/>
-    <testcase classname="${TEST_NAME}-3" name="AFailingTest">
-    <failure type="NotEnough${TEST_NAME}"> details about failure </failure>
+    <testcase classname="$1-1" name="ASuccessfulTest"/>
+    <testcase classname="$1-2" name="AnotherSuccessfulTest"/>
+    <testcase classname="$1-3" name="AFailingTest">
+    <failure type="NotEnough$1"> details about failure </failure>
     </testcase>
 </testsuite>
 EOF
