@@ -26,8 +26,7 @@ pipeline {
             }
             agent { label 'CI' }
             steps {
-                checkout changelog: false, scm: [
-                    $class: 'GitSCM',
+                checkout scm: [$class: 'GitSCM',
                     branches: [[name: "refs/heads/master"]],
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [[$class: 'WipeWorkspace']],
@@ -112,20 +111,22 @@ pipeline {
                 lock(resource: env.envName, inversePrecedence: true) {
                     milestone 4
                     script { currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}" }
-                    // checkout changelog: false, scm: [$class: 'GitSCM',
-                    //     branches: [[name: "refs/heads/master"]],
-                    //     doGenerateSubmoduleConfigurations: false,
-                    //     extensions: [[$class: 'WipeWorkspace']],
-                    //     submoduleCfg: [],
-                    //     userRemoteConfigs: [[
-                    //         url: 'git@github.com:Calavista/wifi-indigo.git',
-                    //         refspec: '+refs/heads/master:refs/remotes/origin/master',
-                    //     ]]
-                    // ]
+                    checkout scm: [$class: 'GitSCM',
+                        branches: [[name: "refs/heads/master"]],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [[$class: 'WipeWorkspace']],
+                        submoduleCfg: [],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/ostov/jenkinsfile-delivery-pipeline.git',
+                            refspec: '+refs/heads/master:refs/remotes/origin/master',
+                        ]]
+                    ]
                     echo "Testing on ${env.envName}"
                     sh '''
                         echo "[INFO] Testing ${APP_VERSION}.${APP_BUILD} on ${envName} ..."
-                        ./runt_tests.sh Foo
+                        mkdir -p target/test-results/test
+                        chmod +x run_tests.sh
+                        ./run_tests.sh
                     '''
                 }
             }
@@ -181,20 +182,22 @@ pipeline {
                 lock(resource: env.envName, inversePrecedence: true) {
                     milestone 8
                     script { currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}" }
-                    // checkout changelog: false, scm: [$class: 'GitSCM',
-                    //     branches: [[name: "refs/heads/master"]],
-                    //     doGenerateSubmoduleConfigurations: false,
-                    //     extensions: [[$class: 'WipeWorkspace']],
-                    //     submoduleCfg: [],
-                    //     userRemoteConfigs: [[
-                    //         url: 'git@github.com:Calavista/wifi-indigo.git',
-                    //         refspec: '+refs/heads/master:refs/remotes/origin/master',
-                    //     ]]
-                    // ]
+                    checkout scm: [$class: 'GitSCM',
+                        branches: [[name: "refs/heads/master"]],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [[$class: 'WipeWorkspace']],
+                        submoduleCfg: [],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/ostov/jenkinsfile-delivery-pipeline.git',
+                            refspec: '+refs/heads/master:refs/remotes/origin/master',
+                        ]]
+                    ]
                     echo "Testing on ${env.envName}"
                     sh '''
                         echo "[INFO] Testing ${APP_VERSION}.${APP_BUILD} on ${envName} ..."
-                        ./runt_tests.sh Bar
+                        mkdir -p target/test-results/test
+                        chmod +x run_tests.sh
+                        ./run_tests.sh Bar
                     '''
                 }
             }

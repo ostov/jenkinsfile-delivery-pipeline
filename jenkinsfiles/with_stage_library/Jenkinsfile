@@ -15,6 +15,7 @@ pipeline {
             daysToKeepStr: '30',
             numToKeepStr: ''
         )
+        skipDefaultCheckout()
         copyArtifactPermission env.JOB_NAME
         ansiColor('xterm')
         timestamps()
@@ -28,17 +29,7 @@ pipeline {
             }
             agent { label 'CI' }
             steps {
-                checkout changelog: false, scm: [
-                    $class: 'GitSCM',
-                    branches: [[name: "refs/heads/master"]],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [[$class: 'WipeWorkspace']],
-                    submoduleCfg: [],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/ostov/jenkinsfile-delivery-pipeline.git',
-                        refspec: '+refs/heads/master:refs/remotes/origin/master',
-                    ]]
-                ]
+                checkoutScmGit('https://github.com/ostov/jenkinsfile-delivery-pipeline.git')
                 script {
                     env.APP_VERSION = sh (
                         script: 'cat version.properties | grep "APP_VERSION" | awk -F\'[=.]\' \'{print $2 "." $3;}\'',
@@ -78,53 +69,5 @@ pipeline {
 
         // THIS DOES NOT WORK:
         deployStage([ "envName": "DevInt", "timeOut": 10, "lockMilestone": 2, "doneMilestone": 3 ])
-
-        stage("Tests on DevInt") {
-            options {
-                skipDefaultCheckout()
-                timeout(time: 15, unit: 'MINUTES')
-            }
-            environment {
-                envName = "DevInt"
-            }
-            agent { label env.envName }
-            steps {
-                lock(resource: env.envName, inversePrecedence: true) {
-                    milestone 4
-                    script { currentBuild.displayName = "${env.APP_VERSION}.${env.APP_BUILD}" }
-                    // checkout changelog: false, scm: [$class: 'GitSCM',
-                    //     branches: [[name: "refs/heads/master"]],
-                    //     doGenerateSubmoduleConfigurations: false,
-                    //     extensions: [[$class: 'WipeWorkspace']],
-                    //     submoduleCfg: [],
-                    //     userRemoteConfigs: [[
-                    //         url: 'git@github.com:Calavista/wifi-indigo.git',
-                    //         refspec: '+refs/heads/master:refs/remotes/origin/master',
-                    //     ]]
-                    // ]
-                    echo "Testing on ${env.envName}"
-                    sh '''
-                        echo "[INFO] Testing ${APP_VERSION}.${APP_BUILD} on ${envName} ..."
-                    '''
-                    writeFile file: "target/test-results/test/TEST-Foo.xml", text: """
-                        <testsuite tests="3">
-                            <testcase classname="foo1" name="ASuccessfulTest"/>
-                            <testcase classname="foo2" name="AnotherSuccessfulTest"/>
-                            <testcase classname="foo3" name="AFailingTest">
-                            <failure type="NotEnoughFoo"> details about failure </failure>
-                            </testcase>
-                        </testsuite>
-                    """
-                    sleep randomIntInRange(10,30)
-                }
-            }
-            post {
-                always {
-                    junit skipPublishingChecks: true, testResults: '**/target/test-results/**/TEST*.xml'
-                    // jacoco classPattern: '**/target/classes', exclusionPattern: '**/*Test*.class', execPattern: '**/target/jacoco/**/*.exec', inclusionPattern: '**/*.class', sourceInclusionPattern: '**/*.java'
-                    milestone 5
-                }
-            }
-        }
     }
 }

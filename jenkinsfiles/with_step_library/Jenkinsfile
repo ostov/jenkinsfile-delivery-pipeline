@@ -35,17 +35,7 @@ pipeline {
             }
             agent { label 'CI' }
             steps {
-                checkout changelog: false, scm: [
-                    $class: 'GitSCM',
-                    branches: [[name: "refs/heads/master"]],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [[$class: 'WipeWorkspace']],
-                    submoduleCfg: [],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/ostov/jenkinsfile-delivery-pipeline.git',
-                        refspec: '+refs/heads/master:refs/remotes/origin/master',
-                    ]]
-                ]
+                checkoutScmGit('https://github.com/ostov/jenkinsfile-delivery-pipeline.git')
                 script {
                     env.APP_VERSION = sh (
                         script: 'cat version.properties | grep "APP_VERSION" | awk -F\'[=.]\' \'{print $2 "." $3;}\'',
@@ -99,7 +89,12 @@ pipeline {
             }
             agent { label env.envName }
             steps {
-                testSteps([ "envName": "DevInt", "lockMilestone": 4, "testName": "Foo" ])
+                testSteps([
+                    "envName": "DevInt",
+                    "lockMilestone": 4,
+                    "gitURL": "https://github.com/ostov/jenkinsfile-delivery-pipeline.git",
+                    "testName": "Foo"
+                ])
             }
             post {
                 always {
@@ -130,9 +125,12 @@ pipeline {
                 timeout(time: 45, unit: 'MINUTES')
             }
             agent { label env.envName }
-            steps {
-                testSteps([ "envName": "QA", "lockMilestone": 8, "testName": "Bar" ])
-            }
+            testSteps([
+                "envName": "DevInt",
+                "lockMilestone": 4,
+                "gitURL": "https://github.com/ostov/jenkinsfile-delivery-pipeline.git",
+                "testName": "Foo"
+            ])
             post {
                 always {
                     junit skipPublishingChecks: true, testResults: '**/target/test-results/**/TEST*.xml'
