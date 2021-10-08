@@ -125,12 +125,14 @@ pipeline {
                 timeout(time: 45, unit: 'MINUTES')
             }
             agent { label env.envName }
-            testSteps([
-                "envName": "DevInt",
-                "lockMilestone": 4,
-                "gitURL": "https://github.com/ostov/jenkinsfile-delivery-pipeline.git",
-                "testName": "Foo"
-            ])
+            steps {
+                testSteps([
+                    "envName": "DevInt",
+                    "lockMilestone": 4,
+                    "gitURL": "https://github.com/ostov/jenkinsfile-delivery-pipeline.git",
+                    "testName": "Foo"
+                ])
+            }
             post {
                 always {
                     junit skipPublishingChecks: true, testResults: '**/target/test-results/**/TEST*.xml'
