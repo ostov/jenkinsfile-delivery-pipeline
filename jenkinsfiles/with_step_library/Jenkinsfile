@@ -49,8 +49,8 @@ pipeline {
                 echo "Build & Test"
                 sh '''
                     echo "[INFO] Updating version with build number ..."
-                    # For Maven use goal "versions:set -DnewVersion=${APP_VERSION}.${APP_BUILD_NUMBER}"
-                    # For Node.js use 'sed -i "s/\"version\": \"${APP_VERSION}.*\"/\"version\": \"${APP_VERSION}.${BUILD_NUMBER}\"/g" package.json'
+                    # For Maven use goal "versions:set -DnewVersion=${APP_VERSION}.${APP_BUILD}"
+                    # For Node.js use 'sed -i "s/\"version\": \"${APP_VERSION}.*\"/\"version\": \"${APP_VERSION}.${APP_BUILD}\"/g" package.json'
                     echo "[INFO] Starting Build & Test ..."
                     echo "${APP_VERSION}.${BUILD_NUMBER}" > artifact.txt
                     mkdir -p target/test-results/test
