@@ -128,7 +128,7 @@ pipeline {
             steps {
                 testSteps([
                     "envName": "QA",
-                    "lockMilestone": 4,
+                    "lockMilestone": 8,
                     "gitURL": "https://github.com/ostov/jenkinsfile-delivery-pipeline.git",
                     "testName": "Bar"
                 ])
