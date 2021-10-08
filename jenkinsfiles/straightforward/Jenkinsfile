@@ -142,7 +142,7 @@ pipeline {
         stage("Deploy to QA") {
             options {
                 skipDefaultCheckout()
-                timeout(time: 10, unit: 'MINUTES')
+                timeout(time: 1, unit: 'DAYS')
             }
             input {
                 message "Should we continue?"
